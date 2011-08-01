@@ -43,8 +43,24 @@ module Mongoid # :nodoc:
     include Reflections
     include Synchronization
 
-    included do
-      attr_accessor :metadata
+    # Set metadata object.
+    #
+    # @param [ Metadata ] metadata The metadata object.
+    # @return [ Metadata ] Assigned metadata object.
+    #
+    # @since 2.1.2
+    def metadata=(metadata)
+      expire_cached_macros
+      @metadata = metadata
+    end
+
+    # Get metadata object.
+    #
+    # @return [ Metadata ] Metadata object.
+    #
+    # @since 2.1.2
+    def metadata
+      @metadata
     end
 
     # Determine if the document itself is embedded in another document via the
@@ -107,5 +123,16 @@ module Mongoid # :nodoc:
     def referenced_one?
       @referenced_one ||= (metadata && metadata.macro == :references_one)
     end
+
+    protected
+
+    # Expires cached metadata helper method results.
+    #
+    # @since 2.1.2
+    def expire_cached_macros
+      cache = %w(embedded embedded_many embedded_one referenced_many referenced_one)
+      cache.each { |var| instance_variable_set :"@#{var}", nil }
+    end
+
   end
 end
